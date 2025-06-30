@@ -11,24 +11,20 @@ import net.minecraft.util.math.Box
 import net.minecraft.client.world.ClientWorld
 import net.minecraft.world.chunk.WorldChunk
 import net.minecraft.fluid.Fluids
+import net.minecraft.registry.tag.FluidTags
 import java.util.function.Predicate
 
 @Environment(EnvType.CLIENT)
 class SeaPickleHighlighter : AbstractBlockHighlighter(
-    /* predicate: */ Predicate { state: net.minecraft.block.BlockState -> state.isOf(Blocks.SEA_PICKLE) },
-    /* color: */ floatArrayOf(0f, 1f, 1f),     // cyan
-    /* alpha: */ 0.2f
+    Predicate { it.isOf(Blocks.SEA_PICKLE) },
+    floatArrayOf(0f,1f,1f),  /* cyan */
+    0.3f                     /* alpha */
 ) {
     override fun shouldProcess(): Boolean {
         val client = MinecraftClient.getInstance()
         val world  = client.world ?: return false
-
-        // 1) config must be enabled
-        if (!SkyHelperConfig.instance.seaLumies.enabled) return false
-
-        // 2) only when player is submerged
-        val eyePos = client.player?.eyePos ?: return false
-        val fluid = world.getFluidState(BlockPos(eyePos.x.toInt(), eyePos.y.toInt(), eyePos.z.toInt()))
-        return fluid.fluid == Fluids.WATER || fluid.fluid == Fluids.FLOWING_WATER
+        // only when submerged & enabled…
+        return SkyHelperConfig.instance.seaLumies.enabled &&
+                world.getFluidState(client.player!!.blockPos).fluid.isIn(FluidTags.WATER)
     }
 }

@@ -12,6 +12,9 @@ import net.minecraft.world.chunk.Chunk
 import java.util.function.Predicate
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet
 import me.anomz.skyhelper.utils.BlockRenderHelper
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
+import net.minecraft.block.BlockState
+import kotlin.text.clear
 
 /**
  * Base class for highlighting blocks that match [statePredicate].
@@ -30,6 +33,23 @@ abstract class AbstractBlockHighlighter(
         ClientChunkEvents.CHUNK_UNLOAD.register(this::onChunkUnload)
         ClientPlayConnectionEvents.JOIN.register { _, _, _ -> highlights.clear() }
         WorldRenderEvents.AFTER_TRANSLUCENT.register(this::onRender)
+
+        // Example: rescan visible blocks every tick (inefficient for large areas)
+        ClientTickEvents.END_CLIENT_TICK.register {
+            val client = MinecraftClient.getInstance()
+            val world = client.world ?: return@register
+            if (!shouldProcess()) return@register
+
+            // Example: scan a small area around the player
+            val player = client.player ?: return@register
+            val center = player.blockPos
+            val radius = 4
+            for (x in -radius..radius) for (y in -radius..radius) for (z in -radius..radius) {
+                val pos = center.add(x, y, z)
+                val state = world.getBlockState(pos)
+                onBlockUpdate(pos, state)
+            }
+        }
     }
 
     /** Called for every new chunk that arrives. */
@@ -45,6 +65,15 @@ abstract class AbstractBlockHighlighter(
         if (!shouldProcess()) return
         val cpos = chunk.pos
         highlights.removeIf { it.x shr 4 == cpos.x && it.z shr 4 == cpos.z }
+    }
+
+    protected fun onBlockUpdate(pos: BlockPos, state: BlockState) {
+        if (!shouldProcess()) return
+        if (statePredicate.test(state)) {
+            highlights.add(pos.toImmutable())
+        } else {
+            highlights.remove(pos)
+        }
     }
 
     /** Every frame, draw a box around each stored pos. */
