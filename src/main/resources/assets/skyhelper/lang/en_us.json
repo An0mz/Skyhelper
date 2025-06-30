@@ -1,0 +1,7 @@
+{
+  "config.skyhelper.title": "SkyHelper Settings",
+  "config.skyhelper.category.sealumies": "Sea Lumies Highlighter",
+  "config.skyhelper.sealumies.enabled": "Enable/Disable",
+  "config.skyhelper.sealumies.color":   "Highlight color",
+  "config.skyhelper.sealumies.alpha":   "Highlight opacity"
+}

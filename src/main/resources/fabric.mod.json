@@ -1,0 +1,39 @@
+{
+	"schemaVersion": 1,
+	"id": "skyhelper",
+	"version": "${version}",
+	"name": "SkyHelper",
+	"authors": ["Anomz"],
+	"license": "MIT",
+	"environment": "*",
+
+	"entrypoints": {
+		"client": [
+			{
+				"adapter": "kotlin",
+				"value": "me.anomz.skyhelper.SkyHelperMod"
+			}
+		],
+		"modmenu": [
+			{
+				"adapter": "kotlin",
+				"value": "me.anomz.skyhelper.ModMenuIntegration"
+			}
+		]
+	},
+
+	"depends": {
+		"fabricloader": ">=0.16.14",
+		"minecraft": "~1.21.5",
+		"fabric-api": "*",
+		"fabric-language-kotlin": "*"
+	},
+
+	"custom": {
+		"modmenu": {
+			"clientConfigs": [
+				"me.anomz.skyhelper.gui.SkyHelperConfigScreen"
+			]
+		}
+	}
+}
