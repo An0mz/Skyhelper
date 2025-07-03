@@ -7,22 +7,23 @@ import me.anomz.skyhelper.gui.AbstractBlockHighlighter
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.block.Blocks
-import net.minecraft.block.BlockState
+import net.minecraft.client.MinecraftClient
 
 @Environment(EnvType.CLIENT)
 @AutoService(ModuleInitializer::class)
 class SeaLumiesHighlighter : AbstractBlockHighlighter(
     { state -> state.block == Blocks.SEA_PICKLE },
-    floatArrayOf(), // Will override getColor()
-    0f              // Will override getAlpha()
+    floatArrayOf(), // we override getColor()
+    0f              // we override getAlpha()
 ), ModuleInitializer {
 
-    override fun initModule() {
-        this.init()
-    }
+    override fun initModule() = init()
 
     override fun shouldProcess(): Boolean {
-        return SkyHelperConfig.instance.seaLumies.enabled
+        if (!SkyHelperConfig.instance.seaLumies.enabled) return false
+        val player = MinecraftClient.getInstance().player ?: return false
+        // Use isTouchingWater so highlight works if any part of the player is in water
+        return player.isSubmergedInWater
     }
 
     override fun getColor(): FloatArray {
@@ -33,7 +34,6 @@ class SeaLumiesHighlighter : AbstractBlockHighlighter(
         return floatArrayOf(r, g, b)
     }
 
-    override fun getAlpha(): Float {
-        return SkyHelperConfig.instance.seaLumies.alpha
-    }
+    override fun getAlpha(): Float =
+        SkyHelperConfig.instance.seaLumies.alpha
 }
