@@ -37,19 +37,11 @@ abstract class AbstractBlockHighlighter(
         ClientChunkEvents.CHUNK_UNLOAD.register(this::onChunkUnload)
         ClientPlayConnectionEvents.DISCONNECT.register { _, _ -> highlights.clear() }
 
-        // 2) Immediate placement callback
-        UseBlockCallback.EVENT.register { player, world, hand, hit ->
-            if (!shouldProcess() || world !is ClientWorld) return@register ActionResult.PASS
-            val placePos = hit.blockPos.offset(hit.side)
-            val state = world.getBlockState(placePos)
-            if (statePredicate.test(state)) {
-                highlights.add(placePos.toImmutable())
-            }
-            ActionResult.PASS
-        }
 
-        // 3) Render each frame *after* entities
-        WorldRenderEvents.AFTER_ENTITIES.register(this::onRender)
+        // 3) Listen for block state changes
+        WorldRenderEvents.AFTER_TRANSLUCENT.register { ctx ->
+            onRender(ctx)
+        }
     }
 
     private fun onChunkLoad(world: ClientWorld, chunk: WorldChunk) {
