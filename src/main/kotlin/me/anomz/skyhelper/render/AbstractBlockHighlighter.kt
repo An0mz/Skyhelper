@@ -15,6 +15,7 @@ import net.minecraft.util.ActionResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.chunk.WorldChunk
 import java.util.function.Predicate
+import kotlin.unaryMinus
 
 /**
  * Base class for highlighting blocks that match [statePredicate].
@@ -86,7 +87,7 @@ abstract class AbstractBlockHighlighter(
                 val relBox = box.offset(-cx, -cy, -cz)
                 BlockRenderHelper.renderFilled(
                     ctx, relBox,
-                    color, alpha,
+                    getColor(), getAlpha(),
                     filled = true
                 )
             }
@@ -95,4 +96,10 @@ abstract class AbstractBlockHighlighter(
 
     /** Should highlighting be active right now? */
     protected abstract fun shouldProcess(): Boolean
+
+    /** Returns the color for rendering. */
+    protected open fun getColor(): FloatArray = color
+
+    /** Returns the alpha for rendering. */
+    protected open fun getAlpha(): Float = alpha
 }

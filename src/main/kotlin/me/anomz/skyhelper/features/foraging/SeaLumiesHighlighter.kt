@@ -2,34 +2,38 @@ package me.anomz.skyhelper.features.foraging
 
 import com.google.auto.service.AutoService
 import me.anomz.skyhelper.api.ModuleInitializer
+import me.anomz.skyhelper.config.SkyHelperConfig
 import me.anomz.skyhelper.gui.AbstractBlockHighlighter
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.block.Blocks
+import net.minecraft.block.BlockState
 
 @Environment(EnvType.CLIENT)
 @AutoService(ModuleInitializer::class)
-class SeaLumiesHighlighter
-/** no‑arg ctor for Fabric entrypoint loader */()
-    : AbstractBlockHighlighter(
-    /* predicate: */ { state -> state.block == Blocks.SEA_PICKLE },
-    /* color: */ floatArrayOf(0f, 1f, 1f),    // lime green
-    /* alpha: */ 0.5f
-),
-    ModuleInitializer
-{
-    /** Fabric will call this on startup */
+class SeaLumiesHighlighter : AbstractBlockHighlighter(
+    { state -> state.block == Blocks.SEA_PICKLE },
+    floatArrayOf(), // Will override getColor()
+    0f              // Will override getAlpha()
+), ModuleInitializer {
+
     override fun initModule() {
-        // wires up chunk‑load & block‑update listeners in AbstractBlockHighlighter
         this.init()
     }
 
-    /**
-     * Return `true` when you want to highlight sea pickles.
-     * You can tie this to a keybind or config value.
-     */
     override fun shouldProcess(): Boolean {
-        // for now, always on; later hook into a config or KeyBinding
-        return true
+        return SkyHelperConfig.instance.seaLumies.enabled
+    }
+
+    override fun getColor(): FloatArray {
+        val colorInt = SkyHelperConfig.instance.seaLumies.color
+        val r = ((colorInt shr 16) and 0xFF) / 255f
+        val g = ((colorInt shr 8) and 0xFF) / 255f
+        val b = (colorInt and 0xFF) / 255f
+        return floatArrayOf(r, g, b)
+    }
+
+    override fun getAlpha(): Float {
+        return SkyHelperConfig.instance.seaLumies.alpha
     }
 }
