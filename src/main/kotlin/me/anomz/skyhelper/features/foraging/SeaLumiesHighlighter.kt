@@ -1,30 +1,35 @@
-package me.anomz.skyhelper.gui
+package me.anomz.skyhelper.features.foraging
 
-import me.anomz.skyhelper.config.SkyHelperConfig
+import com.google.auto.service.AutoService
+import me.anomz.skyhelper.api.ModuleInitializer
+import me.anomz.skyhelper.gui.AbstractBlockHighlighter
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.block.Blocks
-import net.minecraft.client.MinecraftClient
-import net.minecraft.state.property.Properties
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Box
-import net.minecraft.client.world.ClientWorld
-import net.minecraft.world.chunk.WorldChunk
-import net.minecraft.fluid.Fluids
-import net.minecraft.registry.tag.FluidTags
-import java.util.function.Predicate
 
 @Environment(EnvType.CLIENT)
-class SeaPickleHighlighter : AbstractBlockHighlighter(
-    Predicate { it.isOf(Blocks.SEA_PICKLE) },
-    floatArrayOf(0f,1f,1f),  /* cyan */
-    0.3f                     /* alpha */
-) {
+@AutoService(ModuleInitializer::class)
+class SeaLumiesHighlighter
+/** no‑arg ctor for Fabric entrypoint loader */()
+    : AbstractBlockHighlighter(
+    /* predicate: */ { state -> state.block == Blocks.SEA_PICKLE },
+    /* color: */ floatArrayOf(0f, 1f, 1f),    // lime green
+    /* alpha: */ 0.5f
+),
+    ModuleInitializer
+{
+    /** Fabric will call this on startup */
+    override fun initModule() {
+        // wires up chunk‑load & block‑update listeners in AbstractBlockHighlighter
+        this.init()
+    }
+
+    /**
+     * Return `true` when you want to highlight sea pickles.
+     * You can tie this to a keybind or config value.
+     */
     override fun shouldProcess(): Boolean {
-        val client = MinecraftClient.getInstance()
-        val world  = client.world ?: return false
-        // only when submerged & enabled…
-        return SkyHelperConfig.instance.seaLumies.enabled &&
-                world.getFluidState(client.player!!.blockPos).fluid.isIn(FluidTags.WATER)
+        // for now, always on; later hook into a config or KeyBinding
+        return true
     }
 }

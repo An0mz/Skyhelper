@@ -2,6 +2,7 @@ plugins {
 	id 'fabric-loom' version "${loom_version}"
 	id 'maven-publish'
 	id "org.jetbrains.kotlin.jvm" version "2.1.21"
+	id "org.jetbrains.kotlin.kapt" version "2.1.21"
 }
 
 version = project.mod_version
@@ -29,6 +30,8 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
 
 	implementation "com.google.code.gson:gson:2.10.1"
+	compileOnly("com.google.auto.service:auto-service-annotations:1.0")
+	kapt("com.google.auto.service:auto-service:1.0")
 
 	// cloth‑config, REI, ModMenu, Architectury
 	modApi("me.shedaniel.cloth:cloth-config-fabric:18.0.145")
