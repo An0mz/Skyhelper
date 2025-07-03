@@ -1,58 +1,57 @@
 package me.anomz.skyhelper.gui
 
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet
+import me.anomz.skyhelper.api.ModuleInitializer
+import me.anomz.skyhelper.utils.BlockRenderHelper
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
+import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.world.ClientWorld
+import net.minecraft.block.BlockState
+import net.minecraft.util.ActionResult
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.chunk.WorldChunk
-import net.minecraft.world.chunk.Chunk
 import java.util.function.Predicate
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet
-import me.anomz.skyhelper.utils.BlockRenderHelper
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.minecraft.block.BlockState
-import kotlin.text.clear
 
 /**
  * Base class for highlighting blocks that match [statePredicate].
- * Subclasses decide when it’s active via [shouldProcess].
+ * Subclasses decide activation via [shouldProcess].
  */
 abstract class AbstractBlockHighlighter(
-    private val statePredicate: Predicate<net.minecraft.block.BlockState>,
-    private val color: FloatArray,    // RGB floats
-    private val alpha: Float           // 0..1
-) {
+    protected val statePredicate: Predicate<BlockState>,
+    private val color: FloatArray,
+    private val alpha: Float
+) : ModuleInitializer {
+
+    // All tracked positions
     private val highlights = ObjectOpenHashSet<BlockPos>()
 
-    /** Call this once during client init. */
+    override fun initModule() = init()
+
     fun init() {
+        // 1) Seed from loaded chunks
         ClientChunkEvents.CHUNK_LOAD.register(this::onChunkLoad)
         ClientChunkEvents.CHUNK_UNLOAD.register(this::onChunkUnload)
-        ClientPlayConnectionEvents.JOIN.register { _, _, _ -> highlights.clear() }
-        WorldRenderEvents.AFTER_TRANSLUCENT.register(this::onRender)
+        ClientPlayConnectionEvents.DISCONNECT.register { _, _ -> highlights.clear() }
 
-        // Example: rescan visible blocks every tick (inefficient for large areas)
-        ClientTickEvents.END_CLIENT_TICK.register {
-            val client = MinecraftClient.getInstance()
-            val world = client.world ?: return@register
-            if (!shouldProcess()) return@register
-
-            // Example: scan a small area around the player
-            val player = client.player ?: return@register
-            val center = player.blockPos
-            val radius = 4
-            for (x in -radius..radius) for (y in -radius..radius) for (z in -radius..radius) {
-                val pos = center.add(x, y, z)
-                val state = world.getBlockState(pos)
-                onBlockUpdate(pos, state)
+        // 2) Immediate placement callback
+        UseBlockCallback.EVENT.register { player, world, hand, hit ->
+            if (!shouldProcess() || world !is ClientWorld) return@register ActionResult.PASS
+            val placePos = hit.blockPos.offset(hit.side)
+            val state = world.getBlockState(placePos)
+            if (statePredicate.test(state)) {
+                highlights.add(placePos.toImmutable())
             }
+            ActionResult.PASS
         }
+
+        // 3) Render each frame *after* entities
+        WorldRenderEvents.AFTER_ENTITIES.register(this::onRender)
     }
 
-    /** Called for every new chunk that arrives. */
     private fun onChunkLoad(world: ClientWorld, chunk: WorldChunk) {
         if (!shouldProcess()) return
         chunk.forEachBlockMatchingPredicate(statePredicate) { pos, _ ->
@@ -60,51 +59,48 @@ abstract class AbstractBlockHighlighter(
         }
     }
 
-    /** Called when chunks unload. */
     private fun onChunkUnload(world: ClientWorld, chunk: WorldChunk) {
         if (!shouldProcess()) return
-        val cpos = chunk.pos
-        highlights.removeIf { it.x shr 4 == cpos.x && it.z shr 4 == cpos.z }
+        val baseX = chunk.pos.x shl 4
+        val baseZ = chunk.pos.z shl 4
+        highlights.removeIf { pos ->
+            pos.x in baseX until (baseX + 16) && pos.z in baseZ until (baseZ + 16)
+        }
     }
 
-    protected fun onBlockUpdate(pos: BlockPos, state: BlockState) {
+    /** Called from the ClientWorld mixin on every block state change. */
+    fun onBlockChanged(pos: BlockPos, newState: BlockState) {
         if (!shouldProcess()) return
-        if (statePredicate.test(state)) {
+        if (statePredicate.test(newState)) {
             highlights.add(pos.toImmutable())
         } else {
             highlights.remove(pos)
         }
     }
 
-    /** Every frame, draw a box around each stored pos. */
+    /** Renders all tracked positions each frame. */
     private fun onRender(ctx: WorldRenderContext) {
         val client = MinecraftClient.getInstance()
-        if (!shouldProcess() || client.world == null) return
+        val world  = client.world ?: return
+        if (!shouldProcess()) return
 
-        // once per frame
         val cam = ctx.camera()
         val cx  = cam.pos.x
         val cy  = cam.pos.y
         val cz  = cam.pos.z
 
         for (pos in highlights) {
-            BlockRenderHelper.getBlockBoundingBox(client.world!!, pos)?.let { outline ->
-                // move into camera space
-                val relBox = outline.offset(-cx, -cy, -cz)
-
-                // draw filled box (or switch to renderOutline if you prefer wireframe)
+            BlockRenderHelper.getBlockBoundingBox(world, pos)?.let { box ->
+                val relBox = box.offset(-cx, -cy, -cz)
                 BlockRenderHelper.renderFilled(
-                    ctx,
-                    relBox,
-                    color,
-                    alpha,
+                    ctx, relBox,
+                    color, alpha,
                     filled = true
                 )
             }
         }
     }
 
-
-    /** Should we be actively highlighting right now? */
+    /** Should highlighting be active right now? */
     protected abstract fun shouldProcess(): Boolean
 }
