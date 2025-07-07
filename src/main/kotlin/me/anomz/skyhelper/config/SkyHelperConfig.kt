@@ -5,9 +5,11 @@ import net.fabricmc.loader.api.FabricLoader
 import java.nio.file.Files
 import java.nio.file.Path
 import me.anomz.skyhelper.config.features.foraging.SeaLumiesConfig
+import me.anomz.skyhelper.config.features.tooltip.ScrollableTooltipConfig
 
 data class SkyHelperConfig(
-    var seaLumies: SeaLumiesConfig = SeaLumiesConfig()
+    var seaLumies: SeaLumiesConfig = SeaLumiesConfig(),
+    var scrollableTooltip: ScrollableTooltipConfig = ScrollableTooltipConfig()
     // future sections…
 ) {
     companion object {
@@ -70,6 +72,4 @@ data class SkyHelperConfig(
             }
         }
     }
-
 }
-

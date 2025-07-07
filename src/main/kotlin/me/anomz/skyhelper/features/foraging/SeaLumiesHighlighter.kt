@@ -9,15 +9,12 @@ import net.fabricmc.api.Environment
 import net.minecraft.block.Blocks
 import net.minecraft.block.SeaPickleBlock
 import net.minecraft.client.MinecraftClient
-import kotlin.collections.get
-import kotlin.text.compareTo
 
 @Environment(EnvType.CLIENT)
 @AutoService(ModuleInitializer::class)
 class SeaLumiesHighlighter : AbstractBlockHighlighter(
     { state ->
-        state.block == Blocks.SEA_PICKLE &&
-                state.get(SeaPickleBlock.PICKLES) >= SkyHelperConfig.instance.seaLumies.minPickles
+        state.block == Blocks.SEA_PICKLE
     },
     floatArrayOf(), // we override getColor()
     0f              // we override getAlpha()
@@ -28,7 +25,6 @@ class SeaLumiesHighlighter : AbstractBlockHighlighter(
     override fun shouldProcess(): Boolean {
         if (!SkyHelperConfig.instance.seaLumies.enabled) return false
         val player = MinecraftClient.getInstance().player ?: return false
-        // Use isTouchingWater so highlight works if any part of the player is in water
         return player.isSubmergedInWater
     }
 

@@ -6,58 +6,77 @@ import net.fabricmc.api.Environment
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.text.Text
 import me.shedaniel.clothconfig2.api.ConfigBuilder
+import me.shedaniel.clothconfig2.api.ConfigCategory
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder
 
 @Environment(EnvType.CLIENT)
 object SkyHelperConfigScreen {
     @JvmStatic
     fun create(parent: Screen?): Screen {
-        // reload JSON
         SkyHelperConfig.load()
-
         val builder = ConfigBuilder.create()
             .setParentScreen(parent)
             .setTitle(Text.translatable("config.skyhelper.title"))
-        val eb  = builder.entryBuilder
-        val sea = builder.getOrCreateCategory(Text.translatable("config.skyhelper.category.sealumies"))
-        val cfg = SkyHelperConfig.instance.seaLumies
+        val eb = builder.entryBuilder
 
-        // enabled toggle
-        sea.addEntry(
-            eb.startBooleanToggle(
-                Text.translatable("config.skyhelper.sealumies.enabled"),
-                cfg.enabled
-            )
-                .setSaveConsumer { cfg.enabled = it }
-                .build()
-        )
+        addSeaLumiesCategory(builder, eb)
+        addScrollableTooltipCategory(builder, eb)
 
-        // single color picker (0xRRGGBB)
-        sea.addEntry(
-            eb.startColorField(
-                Text.translatable("config.skyhelper.sealumies.color"),
-                cfg.color
-            )
-                .setSaveConsumer { newHex ->
-                    cfg.color = newHex and 0xFFFFFF
-                }
-                .build()
-        )
-
-        // single alpha slider
-        sea.addEntry(
-            eb.startFloatField(
-                Text.translatable("config.skyhelper.sealumies.alpha"),
-                cfg.alpha
-            )
-                .setSaveConsumer { newA ->
-                    cfg.alpha = newA.coerceIn(0f, 1f)
-                }
-                .build()
-        )
-
-        // save on Done
         builder.setSavingRunnable { SkyHelperConfig.save() }
         return builder.build()
     }
+
+    private fun addSeaLumiesCategory(builder: ConfigBuilder, eb: ConfigEntryBuilder) {
+        val sea = builder.getOrCreateCategory(Text.translatable("config.skyhelper.category.sealumies"))
+        val cfg = SkyHelperConfig.instance.seaLumies
+
+        sea.addEntry(booleanToggle(eb, "config.skyhelper.sealumies.enabled", cfg::enabled))
+        sea.addEntry(colorField(eb, "config.skyhelper.sealumies.color", cfg::color))
+        sea.addEntry(floatField(eb, "config.skyhelper.sealumies.alpha", cfg::alpha, 0f, 1f))
+    }
+
+    private fun addScrollableTooltipCategory(builder: ConfigBuilder, eb: ConfigEntryBuilder) {
+        val cat = builder.getOrCreateCategory(Text.translatable("config.skyhelper.category.tooltip"))
+        val cfg = SkyHelperConfig.instance.scrollableTooltip
+
+        cat.addEntry(booleanToggle(eb, "config.skyhelper.scrollabletooltip.enabled", cfg::enabled))
+    }
+
+    private fun booleanToggle(
+        eb: ConfigEntryBuilder,
+        key: String,
+        ref: kotlin.reflect.KMutableProperty0<Boolean>
+    ) = eb.startBooleanToggle(Text.translatable(key), ref.get())
+        .setSaveConsumer {
+            ref.set(it)
+            SkyHelperConfig.save()
+            // Optionally: trigger live update here
+        }
+        .build()
+
+    private fun colorField(
+        eb: ConfigEntryBuilder,
+        key: String,
+        ref: kotlin.reflect.KMutableProperty0<Int>
+    ) = eb.startColorField(Text.translatable(key), ref.get())
+        .setSaveConsumer {
+            ref.set(it and 0xFFFFFF)
+            SkyHelperConfig.save()
+            // Optionally: trigger live update here
+        }
+        .build()
+
+    private fun floatField(
+        eb: ConfigEntryBuilder,
+        key: String,
+        ref: kotlin.reflect.KMutableProperty0<Float>,
+        min: Float,
+        max: Float
+    ) = eb.startFloatField(Text.translatable(key), ref.get())
+        .setSaveConsumer {
+            ref.set(it.coerceIn(min, max))
+            SkyHelperConfig.save()
+            // Optionally: trigger live update here
+        }
+        .build()
 }

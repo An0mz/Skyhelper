@@ -2,6 +2,8 @@ package me.anomz.skyhelper.features.tooltip
 
 import com.google.auto.service.AutoService
 import me.anomz.skyhelper.api.ModuleInitializer
+import me.anomz.skyhelper.config.SkyHelperConfig
+import me.anomz.skyhelper.config.features.tooltip.ScrollableTooltipConfig
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents
 import net.minecraft.client.util.InputUtil
@@ -16,6 +18,7 @@ class ScrollableTooltip : ModuleInitializer {
         ScreenEvents.BEFORE_INIT.register { client, screen, _, _ ->
             var prevBox: Box? = null
             ScreenMouseEvents.beforeMouseScroll(screen).register { _, _, _, _, vertical ->
+                if (!SkyHelperConfig.instance.scrollableTooltip.enabled) return@register
                 val handle = client.window.handle
                 if (
                     InputUtil.isKeyPressed(handle, GLFW.GLFW_KEY_LEFT_SHIFT) ||
@@ -25,12 +28,15 @@ class ScrollableTooltip : ModuleInitializer {
                         ScrollableTooltipState.offset + (-vertical * 10).toInt(),
                         -200, 200
                     )
-                    true
-                } else {
-                    false
                 }
             }
             ScreenEvents.afterTick(screen).register {
+                if (!SkyHelperConfig.instance.scrollableTooltip.enabled) {
+                    ScrollableTooltipState.offset = 0
+                    ScrollableTooltipState.lastTooltipBox = null
+                    prevBox = null
+                    return@register
+                }
                 val box = ScrollableTooltipState.lastTooltipBox
                 val threshold = 10.0
                 val movedSignificantly = prevBox != null && box != null &&
