@@ -1,14 +1,17 @@
 {
-	"required": true,
-	"package": "me.anomz.mixin",
-	"compatibilityLevel": "JAVA_17",
-	"mixins": [
-		"ClientWorldMixin"
-	],
-	"injectors": {
-		"defaultRequire": 1
-	},
-	"overwrites": {
-		"requireAnnotations": true
-	}
+  "required": true,
+  "package": "me.anomz.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "ClientWorldMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  },
+  "client": [
+    "DrawContextMixin"
+  ]
 }

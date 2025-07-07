@@ -7,12 +7,18 @@ import me.anomz.skyhelper.gui.AbstractBlockHighlighter
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.block.Blocks
+import net.minecraft.block.SeaPickleBlock
 import net.minecraft.client.MinecraftClient
+import kotlin.collections.get
+import kotlin.text.compareTo
 
 @Environment(EnvType.CLIENT)
 @AutoService(ModuleInitializer::class)
 class SeaLumiesHighlighter : AbstractBlockHighlighter(
-    { state -> state.block == Blocks.SEA_PICKLE },
+    { state ->
+        state.block == Blocks.SEA_PICKLE &&
+                state.get(SeaPickleBlock.PICKLES) >= SkyHelperConfig.instance.seaLumies.minPickles
+    },
     floatArrayOf(), // we override getColor()
     0f              // we override getAlpha()
 ), ModuleInitializer {

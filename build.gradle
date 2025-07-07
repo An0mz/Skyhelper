@@ -29,6 +29,8 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	modImplementation "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
 
+	modImplementation "net.fabricmc.fabric-api:fabric-rendering-v1:9.0.5"
+
 	implementation "com.google.code.gson:gson:2.10.1"
 	compileOnly("com.google.auto.service:auto-service-annotations:1.0")
 	kapt("com.google.auto.service:auto-service:1.0")
