@@ -3,7 +3,7 @@ package me.anomz.skyhelper.features.foraging
 import com.google.auto.service.AutoService
 import me.anomz.skyhelper.api.ModuleInitializer
 import me.anomz.skyhelper.config.SkyHelperConfig
-import me.anomz.skyhelper.gui.AbstractBlockHighlighter
+import me.anomz.skyhelper.render.AbstractBlockHighlighter
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.block.Blocks

@@ -1,7 +1,7 @@
 package me.anomz.mixin;
 
 import me.anomz.skyhelper.api.ModuleInitializer;
-import me.anomz.skyhelper.gui.AbstractBlockHighlighter;
+import me.anomz.skyhelper.render.AbstractBlockHighlighter;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.block.BlockState;

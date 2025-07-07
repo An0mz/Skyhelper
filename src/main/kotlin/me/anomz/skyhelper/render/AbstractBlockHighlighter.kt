@@ -1,4 +1,4 @@
-package me.anomz.skyhelper.gui
+package me.anomz.skyhelper.render
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet
 import me.anomz.skyhelper.api.ModuleInitializer
