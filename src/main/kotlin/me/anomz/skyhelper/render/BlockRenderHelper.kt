@@ -1,4 +1,4 @@
-package me.anomz.skyhelper.utils
+package me.anomz.skyhelper.render
 
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
 import net.minecraft.client.render.VertexConsumerProvider
@@ -7,8 +7,7 @@ import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.client.world.ClientWorld
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
-import org.lwjgl.opengl.GL11.GL_DEPTH_TEST
-import org.lwjgl.opengl.GL11.glEnable
+import org.lwjgl.opengl.GL11
 
 object BlockRenderHelper {
     fun getBlockBoundingBox(world: ClientWorld, pos: BlockPos): Box? {
@@ -29,7 +28,7 @@ object BlockRenderHelper {
         alpha: Float,
         filled: Boolean
     ) {
-        glEnable(GL_DEPTH_TEST)
+        GL11.glEnable(GL11.GL_DEPTH_TEST)
         val ms = ctx.matrixStack() as? MatrixStack ?: return
         val consumers = ctx.consumers() as? VertexConsumerProvider.Immediate ?: return
         val (r, g, b) = color

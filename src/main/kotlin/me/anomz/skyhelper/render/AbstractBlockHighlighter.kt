@@ -2,7 +2,7 @@ package me.anomz.skyhelper.render
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet
 import me.anomz.skyhelper.api.ModuleInitializer
-import me.anomz.skyhelper.utils.BlockRenderHelper
+import me.anomz.skyhelper.render.BlockRenderHelper
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext

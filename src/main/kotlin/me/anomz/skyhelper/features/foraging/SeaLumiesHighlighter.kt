@@ -4,6 +4,7 @@ import com.google.auto.service.AutoService
 import me.anomz.skyhelper.api.ModuleInitializer
 import me.anomz.skyhelper.config.SkyHelperConfig
 import me.anomz.skyhelper.render.AbstractBlockHighlighter
+import me.anomz.skyhelper.utils.IslandUtils
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.block.Blocks
@@ -24,8 +25,9 @@ class SeaLumiesHighlighter : AbstractBlockHighlighter(
 
     override fun shouldProcess(): Boolean {
         if (!SkyHelperConfig.instance.seaLumies.enabled) return false
-        val player = MinecraftClient.getInstance().player ?: return false
-        return player.isSubmergedInWater
+        if (MinecraftClient.getInstance().player?.isSubmergedInWater != true) return false
+
+        return IslandUtils.isOnGalatea()
     }
 
     override fun getColor(): FloatArray {
