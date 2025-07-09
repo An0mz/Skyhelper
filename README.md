@@ -19,12 +19,12 @@
 ---
 
 ## ⚙️ Configuration (`config/skyhelper.json`)
-
+**Edit using Mod Menu**
 ```json
 {
   "seaLumies": {
     "enabled": true,
-    "highlightColor": "#88CCFF",
+    "highlightColor": 16711680,
     "opacity": 0.5
   },
   "tooltip": {
