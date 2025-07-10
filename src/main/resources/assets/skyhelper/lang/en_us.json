@@ -1,9 +1,12 @@
 {
   "config.skyhelper.title": "SkyHelper Settings",
+
   "config.skyhelper.category.sealumies": "Sea Lumies Highlighter",
-  "config.skyhelper.sealumies.enabled": "Enable/Disable",
-  "config.skyhelper.sealumies.color":   "Highlight color",
-  "config.skyhelper.sealumies.alpha":   "Highlight opacity",
-  "config.skyhelper.category.tooltip": "Scrollable Tooltip",
-  "config.skyhelper.scrollabletooltip.enabled": "Enable/Disable"
+  "sealumies.enabled": "Enable Sea Lumies Highlight",
+  "sealumies.color": "Highlight Color",
+  "sealumies.alpha": "Highlight Opacity",
+
+  "config.skyhelper.category.scrollable_tooltip": "Scrollable Tooltip",
+  "config.skyhelper.scrollable_tooltip.enabled": "Enable Scrollable Tooltip",
+  "config.skyhelper.scrollable_tooltip.max_lines": "Max Tooltip Lines"
 }

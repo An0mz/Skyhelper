@@ -1,4 +1,4 @@
-package me.anomz.skyhelper.gui
+package me.anomz.skyhelper.cache.foraging
 
 import net.minecraft.block.Blocks
 import net.minecraft.util.math.BlockPos
