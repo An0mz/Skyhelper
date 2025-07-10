@@ -19,7 +19,7 @@
 ---
 
 ## ⚙️ Configuration (`config/skyhelper.json`)
-**Edit using Mod Menu**
+**Edit using Mod Menu or by pressing i**
 ```json
 {
   "seaLumies": {
