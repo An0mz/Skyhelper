@@ -15,9 +15,10 @@ object HudEditManager {
     private var lastMy = 0.0
 
     /** Reset drag state when entering edit mode */
-    fun reset() {
+    fun reset(widgets: List<AbstractWidget>) {
         dragging = null
         lastMouseDown = false
+        widgets.forEach { it.resetDrag() }
     }
 
     /** Handle click/drag/release on widgets */

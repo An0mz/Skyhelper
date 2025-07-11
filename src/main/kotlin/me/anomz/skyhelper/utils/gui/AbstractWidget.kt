@@ -5,6 +5,7 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.RenderTickCounter
 import net.minecraft.text.Text
+import kotlin.ranges.contains
 
 /**
  * A single draggable element on the HUD.
@@ -18,6 +19,8 @@ abstract class AbstractWidget(
     var x = 10
     var y = 10
     private var dragging = false
+    private var dragOffsetX = 0.0
+    private var dragOffsetY = 0.0
 
     abstract fun render(ms: DrawContext, mouseX: Int, mouseY: Int, delta: RenderTickCounter?)
     open fun tick() {}
@@ -25,14 +28,16 @@ abstract class AbstractWidget(
     open fun mouseClicked(mx: Double, my: Double, button: Int): Boolean {
         if (button == 0 && contains(mx, my)) {
             dragging = true
+            dragOffsetX = mx - x
+            dragOffsetY = my - y
             return true
         }
         return false
     }
     open fun mouseDragged(mx: Double, my: Double, button: Int, dx: Double, dy: Double): Boolean {
         if (dragging) {
-            x = (x + dx).toInt()
-            y = (y + dy).toInt()
+            x = (mx - dragOffsetX).toInt()
+            y = (my - dragOffsetY).toInt()
             return true
         }
         return false
@@ -78,5 +83,11 @@ abstract class AbstractWidget(
         override fun contains(mx: Double, my: Double) =
             mx in x.toDouble()..(x + width).toDouble() &&
                     my in y.toDouble()..(y + height).toDouble()
+    }
+
+    fun resetDrag() {
+        dragging = false
+        dragOffsetX = 0.0
+        dragOffsetY = 0.0
     }
 }

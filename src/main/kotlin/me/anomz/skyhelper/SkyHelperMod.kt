@@ -37,18 +37,6 @@ object SkyHelperMod : ClientModInitializer {
 			widgets.forEach { it.tick() }
 		}
 
-		HudRenderCallback.EVENT.register { drawContext, tickDelta ->
-			val client = MinecraftClient.getInstance()
-			val mx = client.mouse.x      // raw window coords
-			val my = client.mouse.y
-
-			// 1) let the edit manager handle press/drag/release
-			HudEditManager.handleMouse(widgets, mx, my)
-
-			// 2) render everything (including updated positions)
-			widgets.forEach { it.render(drawContext, mx.toInt(), my.toInt(), tickDelta) }
-		}
-
 
 		// Register the command
 		ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->

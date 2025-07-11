@@ -11,6 +11,8 @@ import net.minecraft.client.option.KeyBinding
 import net.minecraft.client.util.InputUtil
 import net.minecraft.text.Text
 import org.lwjgl.glfw.GLFW
+import kotlin.div
+import kotlin.text.toInt
 
 object HudEditorSystem {
     private lateinit var editKey: KeyBinding
@@ -41,8 +43,10 @@ object HudEditorSystem {
         // Always forward render & mouse events
         HudRenderCallback.EVENT.register { ctx, tickDelta ->
             val mc = MinecraftClient.getInstance()
-            val mx = mc.mouse.x.toDouble()
-            val my = mc.mouse.y.toDouble()
+            val window = mc.window
+            val scale = window.scaleFactor
+            val mx = mc.mouse.x / scale
+            val my = mc.mouse.y / scale
 
             if (editMode) {
                 HudEditManager.handleMouse(widgetsProvider(), mx, my)
@@ -64,7 +68,7 @@ object HudEditorSystem {
             )
         } else {
             // ENTER
-            HudEditManager.reset()
+            HudEditManager.reset(widgetsProvider())
             editMode = true
             client.mouse.unlockCursor()
             client.setScreen(HudEditScreen())
