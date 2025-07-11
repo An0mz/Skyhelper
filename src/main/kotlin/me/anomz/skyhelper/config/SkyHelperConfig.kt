@@ -17,7 +17,8 @@ data class SkyHelperConfig(
     /** Foraging: Sea Lumies node highlight settings */
     var seaLumies: SeaLumiesConfig = SeaLumiesConfig(),
     /** Tooltip enhancement settings */
-    var scrollableTooltip: ScrollableTooltipConfig = ScrollableTooltipConfig()
+    var scrollableTooltip: ScrollableTooltipConfig = ScrollableTooltipConfig(),
+    val hudPositions: MutableMap<String, Pair<Int, Int>> = mutableMapOf()
     // Add new feature configs here...
 ) {
     /**
