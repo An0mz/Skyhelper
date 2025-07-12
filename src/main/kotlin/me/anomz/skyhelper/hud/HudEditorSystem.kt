@@ -61,6 +61,7 @@ object HudEditorSystem {
         if (client.currentScreen is HudEditScreen) {
             // EXIT
             HUDConfigPositions.save(widgetsProvider())
+            HUDConfigPositions.load(widgetsProvider())
             editMode = false
             client.mouse.lockCursor()
             client.setScreen(null)
