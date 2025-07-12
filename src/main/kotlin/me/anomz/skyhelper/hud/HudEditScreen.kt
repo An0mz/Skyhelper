@@ -1,3 +1,4 @@
+// HudEditScreen.kt
 package me.anomz.skyhelper.hud
 
 import me.anomz.skyhelper.utils.gui.AbstractWidget
@@ -5,7 +6,6 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.text.Text
-import org.lwjgl.glfw.GLFW
 
 class HudEditScreen : Screen(Text.empty()) {
     private var draggingWidget: AbstractWidget? = null
@@ -42,7 +42,7 @@ class HudEditScreen : Screen(Text.empty()) {
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        if (keyCode == GLFW.GLFW_KEY_G) {
+        if (keyCode == HudEditorSystem.key) { // Fixed reference
             HudEditorSystem.toggleEditor(MinecraftClient.getInstance())
             return true
         }

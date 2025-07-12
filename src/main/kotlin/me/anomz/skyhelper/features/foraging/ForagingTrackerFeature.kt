@@ -97,9 +97,6 @@ class ForagingTrackerFeature : HUDFeature {
                                 forestWhispers += min
                                 if (max != null && min != max) forestWhispers += max
                             }
-                            else -> {
-                                println("ForagingTracker: Unable to find the rewards.")
-                            }
                         }
                     }
                 }
@@ -163,7 +160,6 @@ class ForagingTrackerFeature : HUDFeature {
 
     override fun createWidgets(): List<AbstractWidget> {
         val config = SkyHelperConfig.instance.foragingTracker
-        println("ForagingTracker: isOnGalatea=${isOnGalatea()}, isHoldingAxe=${isHoldingAxe()}, onlyHoldingAxe=${config.onlyHoldingAxe}")
         val (startX, startY) = HUDConfigPositions.positions[key] ?: (10 to 10)
         return listOf(object : AbstractWidget(key) {
             init { x = startX; y = startY }
@@ -206,7 +202,7 @@ class ForagingTrackerFeature : HUDFeature {
             ) {
                 val config = SkyHelperConfig.instance.foragingTracker
                 val editMode = me.anomz.skyhelper.hud.HudEditManager.editMode
-                // Only draw if in edit mode, or if on Galatea and (if config.onlyHoldingAxe) holding an axe
+                if (!config.enabled) return
                 if (editMode || (isOnGalatea() && (!config.onlyHoldingAxe || isHoldingAxe()))) {
                     draw(ms, mouseX, mouseY)
                 }

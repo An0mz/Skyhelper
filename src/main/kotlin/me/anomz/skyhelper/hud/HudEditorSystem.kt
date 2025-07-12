@@ -19,6 +19,7 @@ object HudEditorSystem {
     private lateinit var widgetsProvider: () -> List<AbstractWidget>
     var editMode = false
         private set
+    var key = GLFW.GLFW_KEY_KP_8
 
     /** Initialize the HUD editor with a provider for current widgets */
     fun init(widgetsProvider: () -> List<AbstractWidget>) {
@@ -29,7 +30,7 @@ object HudEditorSystem {
             KeyBinding(
                 "key.skyhelper.edit_hud",
                 InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_G,
+                key,
                 "category.skyhelper.keys"
             )
         )
@@ -56,6 +57,7 @@ object HudEditorSystem {
     }
 
     fun toggleEditor(client: MinecraftClient) {
+        println("toggleEditor called, currentScreen=${client.currentScreen}")
         if (client.currentScreen is HudEditScreen) {
             // EXIT
             HUDConfigPositions.save(widgetsProvider())
