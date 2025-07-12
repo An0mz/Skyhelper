@@ -1,6 +1,7 @@
 package me.anomz.skyhelper.features.foraging
 
 import com.google.auto.service.AutoService
+import com.google.gson.JsonObject
 import me.anomz.skyhelper.config.SkyHelperConfig
 import me.anomz.skyhelper.hud.HUDFeature
 import me.anomz.skyhelper.utils.IslandUtils
@@ -18,11 +19,6 @@ import net.minecraft.text.Text
 import java.nio.file.Files
 import java.nio.file.StandardOpenOption
 import java.util.regex.Pattern
-import kotlin.collections.fill
-import kotlin.collections.plusAssign
-import kotlin.text.get
-import kotlin.text.toDouble
-import kotlin.times
 
 @AutoService(HUDFeature::class)
 class ForagingTrackerFeature : HUDFeature {
@@ -32,7 +28,10 @@ class ForagingTrackerFeature : HUDFeature {
     private var foragingXp = 0L
     private var hotfXp = 0L
     private var forestWhispers = 0L
-    private val bonusDrops = mutableListOf<Pair<String, Int>>()
+    private var inBonusSection = false
+    private val separatorLine = "▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬"
+    private val bonusRegex = Regex("""(.+?) \(([\d.]+%)\)""")
+    private val bonusDrops = mutableMapOf<String, Pair<Int, Int>>()
     private val gson = com.google.gson.Gson()
     private val configDir = FabricLoader.getInstance().configDir.resolve("skyhelper")
     private val dataFile = configDir.resolve("foraging_tracker.json")
@@ -64,10 +63,32 @@ class ForagingTrackerFeature : HUDFeature {
     }
 
     private fun handleMessage(component: Text) {
-        val raw = component.string
+        val raw = component.string.trim()
         if (TREE_CUT.matcher(raw).find()) {
             treesFelled++
             saveData()
+            return
+        }
+        if (raw.contains("BONUS GIFT", ignoreCase = true)) {
+            inBonusSection = true
+            return
+        }
+        if (inBonusSection) {
+            if (raw == separatorLine) {
+                inBonusSection = false
+                return
+            }
+            bonusRegex.matchEntire(raw)?.let { match ->
+                var name = match.groupValues[1]
+                if (name.startsWith("Enchanted Book")) {
+                    val bookName = Regex("""Enchanted Book \((.+)\)""").find(name)?.groupValues?.get(1)
+                    if (bookName != null) name = bookName
+                }
+                val color = component.style.color?.rgb ?: 0xFFFFFF // default white
+                val (count, _) = bonusDrops[name] ?: (0 to color)
+                bonusDrops[name] = (count + 1 to color)
+                saveData()
+            }
             return
         }
         if (raw.contains("rewards gained", ignoreCase = true)) {
@@ -115,47 +136,65 @@ class ForagingTrackerFeature : HUDFeature {
         try {
             if (Files.exists(dataFile)) {
                 val json = Files.readString(dataFile)
-                val mapType = object : com.google.gson.reflect.TypeToken<Map<String, Long>>() {}.type
-                val data: Map<String, Long> = gson.fromJson(json, mapType)
-                treesFelled = data["treesFelled"] ?: 0L
-                foragingXp = data["foragingXp"] ?: 0L
-                hotfXp = data["hotfXp"] ?: 0L
-                forestWhispers = data["forestWhispers"] ?: 0L
+                val obj = gson.fromJson(json, JsonObject::class.java)
+                treesFelled = obj["treesFelled"]?.asLong ?: 0L
+                foragingXp = obj["foragingXp"]?.asLong ?: 0L
+                hotfXp = obj["hotfXp"]?.asLong ?: 0L
+                forestWhispers = obj["forestWhispers"]?.asLong ?: 0L
+                bonusDrops.clear()
+                obj["bonusDrops"]?.asJsonObject?.entrySet()?.forEach { (name, el) ->
+                    val dropObj = el.asJsonObject
+                    val count = dropObj["count"]?.asInt ?: 0
+                    val color = dropObj["color"]?.asInt ?: 0xFFFFFF
+                    bonusDrops[name] = count to color
+                }
             }
         } catch (_: Exception) {
-            treesFelled = 0L; foragingXp = 0L; hotfXp = 0L; forestWhispers = 0L
+            treesFelled = 0L; foragingXp = 0L; hotfXp = 0L; forestWhispers = 0L; bonusDrops.clear()
         }
     }
 
     private fun saveData() {
         try {
             if (!Files.exists(configDir)) Files.createDirectories(configDir)
-            val data = mapOf(
-                "treesFelled" to treesFelled,
-                "foragingXp" to foragingXp,
-                "hotfXp" to hotfXp,
-                "forestWhispers" to forestWhispers
-            )
+            val data = JsonObject().apply {
+                addProperty("treesFelled", treesFelled)
+                addProperty("foragingXp", foragingXp)
+                addProperty("hotfXp", hotfXp)
+                addProperty("forestWhispers", forestWhispers)
+                val bonusObj = JsonObject()
+                bonusDrops.forEach { (name, pair) ->
+                    val (count, color) = pair
+                    val dropObj = JsonObject().apply {
+                        addProperty("count", count)
+                        addProperty("color", color)
+                    }
+                    bonusObj.add(name, dropObj)
+                }
+                add("bonusDrops", bonusObj)
+            }
             Files.writeString(
                 dataFile,
                 gson.toJson(data),
                 StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING
             )
-        } catch (_: Exception) { /* swallow <-- wait what O_O */ }
+        } catch (_: Exception) { /* swallow <-- O_O */ }
     }
 
     fun getDisplayLines(): List<String> = buildList {
         add("§a§lForaging Tracker")
+        if (bonusDrops.isNotEmpty()) {
+            add("§bBonus Drops:")
+            bonusDrops.forEach { (name, pair) ->
+                val (count, _) = pair
+                add("  §f$name §8(§7x§r$count§8)")
+            }
+        }
+        add("")
         add("§eTrees Felled: §f${String.format("%,d", treesFelled)}")
         add("§eForaging XP: §b${String.format("%,d", foragingXp)}")
         add("§eHOTF XP: §a${String.format("%,d", hotfXp)}")
         add("§eForest Whispers: §b${String.format("%,d", forestWhispers)}")
-        if (bonusDrops.isNotEmpty()) {
-            add("§bBonus Drops:")
-            bonusDrops.forEach { (name, count) ->
-                add("  §f$name: §e${String.format("%,d", count)}")
-            }
-        }
     }
 
     override fun createWidgets(): List<AbstractWidget> {
