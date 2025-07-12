@@ -7,6 +7,7 @@ import java.nio.file.Path
 import me.anomz.skyhelper.config.features.foraging.SeaLumiesConfig
 import me.anomz.skyhelper.config.features.tooltip.ScrollableTooltipConfig
 import me.anomz.skyhelper.config.ConfigFeature
+import me.anomz.skyhelper.config.features.foraging.ForagingTrackerConfig
 
 /**
  * Root configuration container for SkyHelper.
@@ -14,11 +15,11 @@ import me.anomz.skyhelper.config.ConfigFeature
  * Holds per-feature config sections and provides load/save utilities.
  */
 data class SkyHelperConfig(
-    /** Foraging: Sea Lumies node highlight settings */
     var seaLumies: SeaLumiesConfig = SeaLumiesConfig(),
-    /** Tooltip enhancement settings */
+    var foragingTracker: ForagingTrackerConfig = ForagingTrackerConfig(),
     var scrollableTooltip: ScrollableTooltipConfig = ScrollableTooltipConfig(),
-    val hudPositions: MutableMap<String, Pair<Int, Int>> = mutableMapOf()
+    val hudPositions: MutableMap<String, Pair<Int, Int>> = mutableMapOf(),
+    var editHudKey: Int = org.lwjgl.glfw.GLFW.GLFW_KEY_KP_8 // default Numpad 8
     // Add new feature configs here...
 ) {
     /**
